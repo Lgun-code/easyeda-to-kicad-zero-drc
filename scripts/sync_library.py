@@ -6,9 +6,12 @@ geometry, creating per-instance variants where placements diverged
     xvfb-run -a <kicad-python> -u sync_library.py <board.kicad_pcb> <project_dir>
 
 Grouping key = footprint shapes + pads + 3D model + layer + attributes,
-with uuids and pad net assignments stripped. fp_text elements are EXCLUDED:
-their content/position is per-instance (reference designators) and would
-shatter the grouping into dozens of fake variants. The largest group keeps
+with uuids and pad net assignments stripped. Property/fp_text elements are
+included by GEOMETRY only (position, rotation, layer, effects) with their
+string content normalised out: KiCad's library comparison does check text
+geometry, and on boards where the importer baked per-instance text placement
+in, excluding it leaves a residue of lib_footprint_mismatch that no amount
+of shape matching will clear. The largest group keeps
 the original library name; other groups become <Name>_v2, <Name>_v3, ... and
 their instances are repointed with SetFPID. The board is saved in place
 (.bak copy first). Run KiCad DRC afterwards: lib_footprint_mismatch must
@@ -89,7 +92,16 @@ def geometry_key(block):
     for ch in split_children(block):
         if ch.startswith(SHAPE_PREFIXES) or ch.startswith(("(pad ", "(model", "(layer", "(attr")):
             ch = re.sub(r'\(uuid "[^"]+"\)', "", ch)
-            ch = re.sub(r'\(net "[^"]*"\)', "", ch)  # pad net assignment is per-instance
+            ch = re.sub(r'\(net \d+ "[^"]*"\)', "", ch)  # pad net assignment is per-instance
+            ch = re.sub(r'\(net "[^"]*"\)', "", ch)
+            parts.append(ch)
+        elif ch.startswith(("(property", "(fp_text")):
+            # KiCad's library comparison includes property/text GEOMETRY
+            # (position, rotation, layer, effects) but not the string
+            # content, which is per-instance data (reference, value).
+            ch = re.sub(r'\(uuid "[^"]+"\)', "", ch)
+            ch = re.sub(r'(\((?:property|fp_text\s+\w+) "[^"]*" )"[^"]*"', r'\1""', ch)
+            ch = re.sub(r'(\(property "[^"]+" )"[^"]*"', r'\1""', ch)
             parts.append(ch)
     return hashlib.md5("\n".join(sorted(parts)).encode()).hexdigest()[:10]
 
