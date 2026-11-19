@@ -1,0 +1,5 @@
+name: easyeda_to_kicad_zero_drc
+title: EasyEDA Pro → KiCad conversion with DRC zeroed
+description: Convert an EasyEDA Pro (嘉立创专业版) project to KiCad, apply the standard repair pass, then freely fix or delete until DRC reports zero errors, zero warnings and zero unconnected items.
+category: Work and knowledge
+include_in_prompt: true
