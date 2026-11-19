@@ -4,6 +4,8 @@
 [![KiCad](https://img.shields.io/badge/KiCad-10-blue.svg)](https://www.kicad.org/)
 [![Python](https://img.shields.io/badge/Python-3.x-green.svg)](https://www.python.org/)
 
+**English** | [简体中文](README.zh-CN.md)
+
 An agent skill (and standalone script pipeline) that converts an **EasyEDA Pro** （嘉立创EDA专业版） project to a native **KiCad** project and drives its DRC report to **zero errors, zero warnings, zero unconnected items**.
 
 A bare KiCad import of a real EasyEDA Pro board typically reports *hundreds* of violations — almost none of them real design problems. The importer discards the source design rules, duplicates UUIDs across footprint instances (corrupting DRC attribution), drops keepout behaviour until the first zone refill, and imports silkscreen artwork that overlaps pads by construction. This project repairs that systematic damage deterministically, then gives the agent (or you) a validated playbook for the remainder.
